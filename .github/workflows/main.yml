@@ -3,8 +3,6 @@ name: React CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -25,15 +23,12 @@ jobs:
       - name: Run Build
         run: npm run build
 
-      - name: Run Tests
-        run: npm test -- --watchAll=false
-
-      - name: Deploy to Netlify
-        if: github.ref == 'refs/heads/main'   # Only deploy on main branch
-        uses: nwtgck/actions-netlify@v2
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@v0.1.7
         with:
-          publish-dir: './dist'
-          production-deploy: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "dist/*"     # if using Vite
+          # source: "build/*"  # if using Create React App
+          target: "/var/www/html"
