@@ -21,7 +21,7 @@ jobs:
         run: npm install
 
       - name: Build React app
-        run: npm run build:vite 
+        run: npm run build 
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
