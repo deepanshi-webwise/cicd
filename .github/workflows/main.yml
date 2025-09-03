@@ -115,37 +115,35 @@ jobs:
         run: npm run build 
 
       - name: Deploy to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: "dist/*"
-          target: "/home/ubuntu/react-ci-cd-demo-build"
-          port: 22
-          strip_components: 1
-
-      - name: Move files to nginx and restart
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Remove old files from nginx directory
-            sudo rm -rf /var/www/react-app/*
+            # Navigate to project directory
+            cd /home/ubuntu/react-ci-cd-demo
             
-            # Copy new build files to nginx directory
-            sudo cp -r /home/ubuntu/react-ci-cd-demo/* /var/www/react-app/
+            # Pull latest changes from GitHub
+            git pull origin main
+            
+            # Install dependencies
+            npm ci
+            
+            # Build the application
+            npm run build
+            
+            # Deploy to nginx (copy contents, not the dist folder itself)
+            sudo rm -rf /var/www/react-app/*
+            sudo cp -r dist/* /var/www/react-app/
             
             # Set proper permissions
             sudo chown -R www-data:www-data /var/www/react-app
             sudo chmod -R 755 /var/www/react-app
             
-            # Reload nginx
+            # Restart nginx
             sudo systemctl reload nginx
             
-            # Show what was deployed (for debugging)
-            echo "Deployed files:"
-            ls -la /var/www/react-app/
-            echo "Deployment completed at $(date)"
+            echo "Deployment completed successfully!"
+            echo "Files deployed:"
+            ls -la /var/www/react-app/ | head -5
