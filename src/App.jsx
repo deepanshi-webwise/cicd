@@ -18,7 +18,7 @@ function App() {
       </div>
       <h1>Deepanshi</h1>
    
-      
+       <h2>Gargi</h2>
   
 
       <div className="card">
